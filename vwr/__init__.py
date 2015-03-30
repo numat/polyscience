@@ -99,7 +99,11 @@ def command_line():
                         "password, as set through the bath interface. Default "
                         "100.")
     parser.add_argument("--set", "-s", default=None, type=float,
-                        help="Sets the bath temperature")
+                        help="Sets the bath temperature.")
+    parser.add_argument("--server", "-w", action="store_true", help="Runs "
+                        "a web server for interfacing with the bath.")
+    parser.add_argument("--port", "-o", default=10000, type=int, help="The "
+                        "port on which to run the web server. Default 10000.")
     args = parser.parse_args()
 
     bath = CirculatingBath(args.address, args.password)
@@ -112,6 +116,61 @@ def command_line():
     units = bath.get_temperature_units()
     print("Setpoint: {setpoint:.2f}°{units}\nActual:   {actual:.2f}°{units}"
           .format(**locals()))
+
+    if args.server:
+        import json
+        import os
+        import traceback
+        from tornado.ioloop import PeriodicCallback
+        import tornado.web
+        import tornado.websocket
+
+        class IndexHandler(tornado.web.RequestHandler):
+
+            def get(self):
+                self.render("index.template", port=args.port)
+
+        class WebSocket(tornado.websocket.WebSocketHandler):
+
+            def open(self):
+                self.p = PeriodicCallback(self._loop, 500)
+                self.p.start()
+
+            def _loop(self):
+                state = {"setpoint": bath.get_setpoint(),
+                         "actual": bath.get_internal_temperature(),
+                         "units": bath.get_temperature_units()}
+                res = json.dumps({"result": state, "error": 0, "data": True},
+                                 separators=(",", ":"))
+                self.write_message(res)
+
+            def on_message(self, message):
+                """Evaluates the function pointed to by json-rpc."""
+                json_rpc = json.loads(message)
+
+                try:
+                    result = getattr(bath,
+                                     json_rpc["method"])(**json_rpc["params"])
+                    error = None
+                except:
+                    result = traceback.format_exc()
+                    error = 1
+
+                self.write_message(json.dumps({"result": result,
+                                               "error": error,
+                                               "id": json_rpc["id"]},
+                                              separators=(",", ":")))
+
+        handlers = [(r"/", IndexHandler), (r"/websocket", WebSocket),
+                    (r'/static/(.*)', tornado.web.StaticFileHandler,
+                     {'path': os.path.normpath(os.path.dirname(__file__))})]
+        application = tornado.web.Application(handlers)
+        application.listen(args.port)
+        try:
+            tornado.ioloop.IOLoop.instance().start()
+        except:
+            pass
+
     bath.close()
 
 

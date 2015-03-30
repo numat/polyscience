@@ -8,6 +8,10 @@ setup(
     author="Patrick Fuller",
     author_email="pat@numat-tech.com",
     packages=["vwr"],
+    package_data={"vwr": ["vwr/client.js",
+                          "vwr/main.css",
+                          "vwr/index.template"]},
+    include_package_data=True,
     entry_points={
         "console_scripts": [("vwr = vwr:command_line")]
     },
