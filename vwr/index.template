@@ -19,11 +19,11 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-xs-6">
                     <h2>Actual</h2>
                     <p><span class="actual">N/A</span>&deg;<span class="units"></span></p>
                 </div>
-                <div class="col-md-6">
+                <div class="col-xs-6">
                     <h2>Setpoint</h2>
                     <p><span class="setpoint" contenteditable="true">N/A</span>&deg;<span class="units"></span></p>
                 </div>

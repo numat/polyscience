@@ -1,29 +1,29 @@
 vwr
 ===
 
-UDP ethernet driver and command line tool for [VWR circulating baths](https://us.vwr.com/store/catalog/product.jsp?catalog_number=89203-002).
+UDP ethernet driver, webserver, and command line tool for [VWR circulating baths](https://us.vwr.com/store/catalog/product.jsp?catalog_number=89203-002).
 
 <p align="center">
   <img src="https://us.vwr.com/stibo/low_res/std.lang.all/53/83/7545383.jpg" height="400" />
 </p>
 
-Installation
-============
-
-```
-pip install git+https://github.com/numat/vwr
-```
-
-If you don't like pip, you can also install from source:
-
-```
-git clone https://github.com/numat/vwr
-cd vwr
-python setup.py install
-```
 
 Usage
 =====
+
+###Web Server
+
+![](screenshot.png)
+
+For temperature control models without a built-in web interface, this provides
+the same functionality. Run the server with:
+
+```
+vwr --server *ip-address*
+```
+
+Navigate to http://localhost:10000, and you're done. Temperatures can be set by
+clicking on and overwriting the displayed setpoint.
 
 ###Command Line
 
