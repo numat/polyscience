@@ -13,7 +13,7 @@
     <body>
         <div class="login-body">
             <div class="container cell-table">
-                <div class="row top cell">
+                <div class="row cell">
                     <div class="col-xs-12">
                         <form action="/login" method="POST" class="login-form">
                           <img class="login-img" src="https://us.vwr.com/stibo/low_res/std.lang.all/53/83/7545383.jpg" />
