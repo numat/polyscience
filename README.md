@@ -32,7 +32,9 @@ Usage
 
 ###Web Server
 
-![](screenshot.png)
+<p align="center">
+  <img src="screenshot.png" height="400" />
+</p>
 
 For temperature control models without a built-in web interface, this provides
 the same functionality. Run the server with:
