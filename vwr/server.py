@@ -104,6 +104,10 @@ def run_server(bath, port=50000, require_login=False):
                                            "id": json_rpc["id"]},
                                           separators=(",", ":")))
 
+        def on_close(self):
+            """Stops looping calls on close."""
+            self.p.stop()
+
     handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
                 (r"/websocket", WebSocket),
                 (r'/static/(.*)', tornado.web.StaticFileHandler,
