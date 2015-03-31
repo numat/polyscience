@@ -8,57 +8,66 @@ Copyright (C) 2015 NuMat Technologies
 import argparse
 import socket
 import sys
+import webbrowser
 from blessings import Terminal
 from driver import CirculatingBath
+import server
 
 
 def command_line():
     """Command-line interface to driver. Run with `vwr`."""
     parser = argparse.ArgumentParser(description="Control a VWR circulating "
-                                     "bath from the command line, or run a "
-                                     "web server.")
+                                     "bath from a web site.")
     parser.add_argument("address", help="The IP address of the bath.")
-    parser.add_argument("--server", action="store_true", help="Runs "
-                        "a web server for interfacing with the bath.")
-    parser.add_argument("--password", "-p", default=100, type=int, help="The "
-                        "password, as set through the bath interface. Default "
-                        "100.")
-    parser.add_argument("--set", "-s", default=None, type=float,
+    parser.add_argument("--require-login", "-l", action="store_true",
+                        help="Redirects users to a password login screen.")
+    parser.add_argument("--set-password", "-p", action="store_true",
+                        help="Start a dialog to set the password of the "
+                        "website login page.")
+    parser.add_argument("--set-temperature", "-t", default=None, type=float,
                         help="Sets the bath temperature.")
-    parser.add_argument("--port", "-o", default=10000, type=int, help="The "
+    parser.add_argument("--port", default=10000, type=int, help="The "
                         "port on which to run the web server. Default 10000.")
+    parser.add_argument("--unlock-code", "-u", default=100, type=int,
+                        help="The code opposite the 'Unlock' option on the "
+                        "VWR circulating bath. Default 100.")
     args = parser.parse_args()
 
-    bath = CirculatingBath(args.address, args.password)
+    bath = CirculatingBath(args.address, password=args.unlock_code)
     t = Terminal()
 
+    if args.set_password:
+        server.set_password()
+
     try:
-        units = bath.get_temperature_units()
-    except socket.timeout:
-        sys.stderr.write(t.bold_red("Could not connect to VWR circulating bath"
-                         ". Is it running at {}?\r\n".format(args.address)))
-        sys.exit(0)
-
-    if args.set:
-        success = bath.set_setpoint(args.set)
-        if success:
-            print(t.bold_green("Successfully set temperature to {setpoint:.2f}"
-                  "°{units}.".format(setpoint=args.set, units=units)))
-        else:
-            sys.stderr.write(t.bold_red("Failed to set temperature."))
-
-    if args.server:
-        from server import run_server
-        print(t.bold_white("Running server at http://localhost:{}/"
-              .format(args.port)))
-        run_server(bath, args.port)
-    else:
         setpoint = bath.get_setpoint()
         actual = bath.get_internal_temperature()
         units = bath.get_temperature_units()
-        print("Setpoint: {setpoint:.2f}°{units}\nActual: {actual:.2f}°{units}"
-              .format(**locals()))
-    bath.close()
+        print(t.bold_white("Current state:") + " {setpoint:.2f}°{units} "
+              "setpoint, {actual:.2f}°{units} actual".format(**locals()))
+    except socket.timeout:
+        sys.stderr.write(t.bold_red("Could not connect to VWR circulating bath"
+                         ". Is it running at {}?\r\n".format(args.address)))
+        bath.close()
+        sys.exit(0)
+
+    if args.set_temperature:
+        success = bath.set_setpoint(args.set_temperature)
+        if success:
+            print(t.bold_green("Successfully set temperature to {setpoint:.2f}"
+                  "°{units}.".format(setpoint=args.set_temperature,
+                                     units=units)))
+        else:
+            sys.stderr.write(t.bold_red("Failed to set temperature."))
+
+    print(t.bold_white("Running server at http://localhost:{}/"
+          .format(args.port)))
+    webbrowser.open("http://localhost:{}/".format(args.port), new=2)
+    try:
+        server.run_server(bath, port=args.port,
+                          require_login=args.require_login)
+    finally:
+        bath.close()
 
 
 if __name__ == "__main__":

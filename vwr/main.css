@@ -28,3 +28,31 @@ p {
 .footer {
   font-size: 12px;
 }
+
+.login-body {
+  background: #fff;
+}
+
+.cell-table {
+  display: table;
+  height: 100%;
+}
+
+.cell {
+  display: table-cell;
+  vertical-align:middle;
+}
+
+.login-input,
+.login-button {
+  width: 150px;
+}
+
+.login-button {
+  margin: 0;
+}
+
+.login-img {
+  width: 150px;
+  margin-bottom: 25px;
+}

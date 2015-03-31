@@ -6,27 +6,61 @@ Web interface for [VWR circulating baths]
 Distributed under the GNU General Public License v2
 Copyright (C) 2015 NuMat Technologies
 """
-
+import getpass
+import hashlib
 import json
 import os
+import time
 import traceback
+
 from tornado.ioloop import PeriodicCallback
 import tornado.web
 import tornado.websocket
 
+ROOT = os.path.normpath(os.path.dirname(__file__))
+with open(os.path.join(ROOT, "password.txt")) as in_file:
+    password = in_file.read().strip()
 
-def run_server(bath, port=10000):
+
+def set_password():
+    """Called by `crystal-password`, this sets a new password."""
+    digest = hashlib.sha512(getpass.getpass().encode("utf-8")).hexdigest()
+    global password
+    password = digest
+    with open(os.path.join(ROOT, "password.txt"), "w") as out_file:
+        out_file.write(digest)
+
+
+def run_server(bath, port=10000, require_login=False):
     """Starts a web server on the specified port.
 
     Args:
         bath: An instance of `CirculatingBath` that is connected to the bath
             of interest.
         port: The port to serve the website. Default 10000.
+        require_login: If True, serves a login page
     """
     class IndexHandler(tornado.web.RequestHandler):
 
         def get(self):
-            self.render("index.template", port=port)
+            if require_login and not self.get_secure_cookie("vwr"):
+                self.redirect("/login")
+            else:
+                self.render("index.template", port=port)
+
+    class LoginHandler(tornado.web.RequestHandler):
+
+        def get(self):
+            self.render("login.template")
+
+        def post(self):
+            submitted_pass = self.get_argument("password", "").encode("utf-8")
+            if hashlib.sha512(submitted_pass).hexdigest() == password:
+                self.set_secure_cookie("vwr", str(time.time()))
+                self.redirect("/")
+            else:
+                time.sleep(1)
+                self.redirect(u"/login?error")
 
     class WebSocket(tornado.websocket.WebSocketHandler):
 
@@ -59,10 +93,11 @@ def run_server(bath, port=10000):
                                            "id": json_rpc["id"]},
                                           separators=(",", ":")))
 
-    handlers = [(r"/", IndexHandler), (r"/websocket", WebSocket),
+    handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
+                (r"/websocket", WebSocket),
                 (r'/static/(.*)', tornado.web.StaticFileHandler,
-                 {'path': os.path.normpath(os.path.dirname(__file__))})]
-    application = tornado.web.Application(handlers)
+                 {'path': ROOT})]
+    application = tornado.web.Application(handlers, cookie_secret=password)
     application.listen(port)
     try:
         tornado.ioloop.IOLoop.instance().start()

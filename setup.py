@@ -10,7 +10,7 @@ setup(
     packages=["vwr"],
     package_data={"vwr": ["vwr/client.js",
                           "vwr/main.css",
-                          "vwr/index.template"]},
+                          "vwr/*.template"]},
     include_package_data=True,
     install_requires=["tornado", "blessings"],
     entry_points={

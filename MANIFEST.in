@@ -1,1 +1,1 @@
-include vwr/index.template vwr/client.js vwr/main.css
+include vwr/*.template vwr/client.js vwr/main.css
