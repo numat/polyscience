@@ -12,6 +12,7 @@ setup(
                           "vwr/main.css",
                           "vwr/index.template"]},
     include_package_data=True,
+    install_requires=["tornado", "blessings"],
     entry_points={
         "console_scripts": [("vwr = vwr:command_line")]
     },
