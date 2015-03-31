@@ -10,8 +10,8 @@ import socket
 import sys
 import webbrowser
 from blessings import Terminal
-from driver import CirculatingBath
-import server
+from vwr import server
+from vwr.driver import CirculatingBath
 
 
 def command_line():
