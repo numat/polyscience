@@ -43,8 +43,8 @@ def command_line():
         setpoint = bath.get_setpoint()
         actual = bath.get_internal_temperature()
         units = bath.get_temperature_units()
-        print(t.bold_white("Current state:") + " {setpoint:.2f}°{units} "
-              "setpoint, {actual:.2f}°{units} actual".format(**locals()))
+        print(t.bold_white("Current state:") + " {setpoint:.2f} {units} "
+              "setpoint, {actual:.2f} {units} actual".format(**locals()))
     except socket.timeout:
         sys.stderr.write(t.bold_red("Could not connect to VWR circulating bath"
                          ". Is it running at {}?\r\n".format(args.address)))
@@ -55,7 +55,7 @@ def command_line():
         success = bath.set_setpoint(args.set_temperature)
         if success:
             print(t.bold_green("Successfully set temperature to {setpoint:.2f}"
-                  "°{units}.".format(setpoint=args.set_temperature,
+                  " {units}.".format(setpoint=args.set_temperature,
                                      units=units)))
         else:
             sys.stderr.write(t.bold_red("Failed to set temperature."))
