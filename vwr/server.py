@@ -17,18 +17,26 @@ from tornado.ioloop import PeriodicCallback
 import tornado.web
 import tornado.websocket
 
-ROOT = os.path.normpath(os.path.dirname(__file__))
-with open(os.path.join(ROOT, "password.txt")) as in_file:
-    password = in_file.read().strip()
+root = os.path.normpath(os.path.dirname(__file__))
+password_path = os.path.join(root, "password.txt")
 
 
 def set_password():
-    """Called by `crystal-password`, this sets a new password."""
+    """Called by `--set-password`, this sets a new password."""
     digest = hashlib.sha512(getpass.getpass().encode("utf-8")).hexdigest()
-    global password
-    password = digest
-    with open(os.path.join(ROOT, "password.txt"), "w") as out_file:
+    with open(password_path, "w") as out_file:
         out_file.write(digest)
+    return digest
+
+
+def get_password():
+    """Gets password if already set, forwards to `set_password` otherwise."""
+    if os.path.exists(password_path):
+        with open(password_path) as in_file:
+            password = in_file.read().strip()
+    else:
+        password = set_password()
+    return password
 
 
 def run_server(bath, port=50000, require_login=False):
@@ -40,6 +48,9 @@ def run_server(bath, port=50000, require_login=False):
         port: The port to serve the website. Default 50000.
         require_login: If True, serves a login page
     """
+    if require_login:
+        password = get_password()
+
     class IndexHandler(tornado.web.RequestHandler):
 
         def get(self):
@@ -96,7 +107,7 @@ def run_server(bath, port=50000, require_login=False):
     handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
                 (r"/websocket", WebSocket),
                 (r'/static/(.*)', tornado.web.StaticFileHandler,
-                 {'path': ROOT})]
+                 {'path': root})]
     application = tornado.web.Application(handlers, cookie_secret=password)
     application.listen(port)
     try:

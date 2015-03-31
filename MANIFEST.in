@@ -1,1 +1,1 @@
-include vwr/*.template vwr/client.js vwr/main.css vwr/password.txt
+include vwr/*.template vwr/client.js vwr/main.css

@@ -9,7 +9,7 @@ setup(
     author_email="pat@numat-tech.com",
     packages=["vwr"],
     package_data={"vwr": ["vwr/client.js", "vwr/main.css",
-                          "vwr/*.template", "vwr/password.txt"]},
+                          "vwr/*.template"]},
     include_package_data=True,
     install_requires=["tornado", "blessings"],
     entry_points={
