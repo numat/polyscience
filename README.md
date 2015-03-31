@@ -12,6 +12,21 @@ These older devices have ethernet ports, but only support serial communication
 over UDP. This code provides the missing web interface by translating browser
 interaction into serial commands.
 
+Installation
+============
+
+```
+pip install vwr
+```
+
+If you don't like pip, you can also install from source:
+
+```
+git clone https://github.com/numat/vwr
+cd vwr
+python setup.py install
+```
+
 Usage
 =====
 
