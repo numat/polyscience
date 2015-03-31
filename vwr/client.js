@@ -1,4 +1,4 @@
-/*global $, WebSocket, alert, window, pipes*/
+/*global $, ReconnectingWebSocket, alert, window, pipes*/
 "use strict";
 
 /**
@@ -11,7 +11,7 @@ var client = {
      */
     connect: function (port) {
         var self = this;
-        this.socket = new WebSocket("ws://" + window.location.hostname + ":" + port + "/websocket");
+        this.socket = new ReconnectingWebSocket("ws://" + window.location.hostname + ":" + port + "/websocket");
 
         this.socket.onmessage = function (messageEvent) {
             var jsonRpc = JSON.parse(messageEvent.data);
