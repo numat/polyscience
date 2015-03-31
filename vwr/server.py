@@ -31,13 +31,13 @@ def set_password():
         out_file.write(digest)
 
 
-def run_server(bath, port=10000, require_login=False):
+def run_server(bath, port=50000, require_login=False):
     """Starts a web server on the specified port.
 
     Args:
         bath: An instance of `CirculatingBath` that is connected to the bath
             of interest.
-        port: The port to serve the website. Default 10000.
+        port: The port to serve the website. Default 50000.
         require_login: If True, serves a login page
     """
     class IndexHandler(tornado.web.RequestHandler):

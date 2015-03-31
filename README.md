@@ -41,7 +41,7 @@ the same functionality. Run the server with:
 vwr [ip-address]
 ```
 
-This should open a browser to http://localhost:10000/. Temperatures can be set
+This should open a browser to http://localhost:50000/. Temperatures can be set
 by clicking on and overwriting the displayed setpoint.
 
 You can set a password with `vwr [ip] --set-password`, and serve a login page

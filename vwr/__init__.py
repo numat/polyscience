@@ -26,8 +26,8 @@ def command_line():
                         "website login page.")
     parser.add_argument("--set-temperature", "-t", default=None, type=float,
                         help="Sets the bath temperature.")
-    parser.add_argument("--port", default=10000, type=int, help="The "
-                        "port on which to run the web server. Default 10000.")
+    parser.add_argument("--port", default=50000, type=int, help="The "
+                        "port on which to run the web server. Default 50000.")
     parser.add_argument("--unlock-code", "-u", default=100, type=int,
                         help="The code opposite the 'Unlock' option on the "
                         "VWR circulating bath. Default 100.")
