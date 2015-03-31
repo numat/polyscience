@@ -14,19 +14,21 @@ class CirculatingBath(object):
 
     This class communicates with the circulating bath over UDP sockets.
     """
-    def __init__(self, address, password=100):
+    def __init__(self, address, password=100, timeout=2):
         """Opens ports to communicate with the circulating bath.
 
         Args:
             address: The IP address of the device
             password: The password next to "Unlock" in the user interface
                 settings. Default 100.
+            timeout: Max time to wait for response, in seconds. Default 2.
         """
         self.address = address
         self.password = password
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(("", 1026))
+        self.listener.settimeout(timeout)
 
     def turn_on(self):
         """Turns the circulating bath on.

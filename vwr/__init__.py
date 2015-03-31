@@ -6,6 +6,8 @@ Distributed under the GNU General Public License v2
 Copyright (C) 2015 NuMat Technologies
 """
 import argparse
+import socket
+import sys
 from blessings import Terminal
 from driver import CirculatingBath
 
@@ -28,8 +30,14 @@ def command_line():
     args = parser.parse_args()
 
     bath = CirculatingBath(args.address, args.password)
-    units = bath.get_temperature_units()
     t = Terminal()
+
+    try:
+        units = bath.get_temperature_units()
+    except socket.timeout:
+        sys.stderr.write(t.bold_red("Could not connect to VWR circulating bath"
+                         ". Is it running at {}?\r\n".format(args.address)))
+        sys.exit(0)
 
     if args.set:
         success = bath.set_setpoint(args.set)
@@ -37,7 +45,7 @@ def command_line():
             print(t.bold_green("Successfully set temperature to {setpoint:.2f}"
                   "°{units}.".format(setpoint=args.set, units=units)))
         else:
-            print(t.bold_red("Failed to set temperature."))
+            sys.stderr.write(t.bold_red("Failed to set temperature."))
 
     if args.server:
         from server import run_server
