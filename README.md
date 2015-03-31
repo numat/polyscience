@@ -7,6 +7,10 @@ Web interface and Python bindings for [VWR circulating baths](https://us.vwr.com
   <img src="https://us.vwr.com/stibo/low_res/std.lang.all/53/83/7545383.jpg" height="400" />
 </p>
 
+This was created to support older circulating baths (before touch screen models).
+These older devices have ethernet ports, but only support serial communication
+over UDP. This code provides the missing web interface by translating browser
+interaction into serial commands.
 
 Usage
 =====
@@ -22,12 +26,11 @@ the same functionality. Run the server with:
 vwr [ip-address]
 ```
 
-Navigate to http://localhost:10000, and you're done. Temperatures can be set by
-clicking on and overwriting the displayed setpoint.
+This should open a browser to http://localhost:10000/. Temperatures can be set
+by clicking on and overwriting the displayed setpoint.
 
-You can set a web password with `vwr [ip-address] --set-password`, and serve
-a login page with `vwr [ip-address] --require-login`. For more, check out the
-help with `vwr help`.
+You can set a password with `vwr [ip] --set-password`, and serve a login page
+with `vwr [ip] --require-login`. For more, check out the help with `vwr --help`.
 
 ###Python
 
