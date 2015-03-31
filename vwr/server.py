@@ -112,7 +112,10 @@ def run_server(bath, port=50000, require_login=False):
                 (r"/websocket", WebSocket),
                 (r'/static/(.*)', tornado.web.StaticFileHandler,
                  {'path': root})]
-    application = tornado.web.Application(handlers, cookie_secret=password)
+    if require_login:
+        application = tornado.web.Application(handlers, cookie_secret=password)
+    else:
+        application = tornado.web.Application(handlers)
     application.listen(port)
     try:
         tornado.ioloop.IOLoop.instance().start()
