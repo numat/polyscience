@@ -52,6 +52,7 @@ class CirculatingBath(object):
         """Gets the setpoint and internal temperature."""
         return {'setpoint': self.get_setpoint(),
                 'actual': self.get_internal_temperature(),
+                'pump': self.get_pump_speed(),
                 'on': self.get_operating_status()}
 
     def get_setpoint(self):
@@ -79,6 +80,11 @@ class CirculatingBath(object):
         self._send('RO')
         return bool(int(self._receive()))
 
+    def get_pump_speed(self):
+        """Returns pump speed as an integer indicating percent, 5-100."""
+        self._send('RM')
+        return int(self._receive())
+
     def set_setpoint(self, setpoint):
         """Sets setpoint temperature.
 
@@ -88,6 +94,19 @@ class CirculatingBath(object):
             True if successful, else False.
         """
         self._send('SS{:.2f}P{:d}'.format(setpoint, self.password))
+        return (self._receive() == '!')
+
+    def set_pump_speed(self, speed):
+        """Sets pump speed.
+
+        Args:
+            setpoint: Pump speed as an integer, 5-100. Will be rounded to
+                nearest 5.
+        Returns:
+            True if successful, else False.
+        """
+        rounded_speed = int(5 * round(speed / 5))
+        self._send('SM{:d}P{:d}'.format(rounded_speed, self.password))
         return (self._receive() == '!')
 
     def close(self):
