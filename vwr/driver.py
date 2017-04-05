@@ -48,8 +48,13 @@ class CirculatingBath(object):
         self._send('SO0P{}'.format(self.password))
         return (self._receive() == '!')
 
+    def get(self):
+        """Gets the setpoint and internal temperature."""
+        return {'setpoint': self.get_setpoint(),
+                'actual': self.get_internal_temperature()}
+
     def get_setpoint(self):
-        """Get the setpoint temperature."""
+        """Gets the setpoint temperature."""
         self._send('RS')
         return float(self._receive())
 
@@ -59,7 +64,7 @@ class CirculatingBath(object):
         return self._receive()
 
     def get_internal_temperature(self):
-        """Get the temperature inside the bath."""
+        """Gets the temperature inside the bath."""
         self._send('RT')
         return float(self._receive())
 
