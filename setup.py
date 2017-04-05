@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='vwr',
-    version='0.1.6',
+    version='0.1.7',
     description='Python driver for VWR circulating baths.',
     url='http://github.com/numat/vwr/',
     author='Patrick Fuller',

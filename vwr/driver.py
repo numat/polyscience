@@ -51,7 +51,8 @@ class CirculatingBath(object):
     def get(self):
         """Gets the setpoint and internal temperature."""
         return {'setpoint': self.get_setpoint(),
-                'actual': self.get_internal_temperature()}
+                'actual': self.get_internal_temperature(),
+                'on': self.get_operating_status()}
 
     def get_setpoint(self):
         """Gets the setpoint temperature."""
@@ -72,6 +73,11 @@ class CirculatingBath(object):
         """If connected, get the temperature of the external thermocouple."""
         self._send('RR')
         return self._receive()
+
+    def get_operating_status(self):
+        """Returns a boolean indicating if bath is operating."""
+        self._send('RO')
+        return bool(int(self._receive()))
 
     def set_setpoint(self, setpoint):
         """Sets setpoint temperature.
