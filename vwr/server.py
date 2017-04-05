@@ -18,13 +18,13 @@ import tornado.web
 import tornado.websocket
 
 root = os.path.normpath(os.path.dirname(__file__))
-password_path = os.path.join(root, "password.txt")
+password_path = os.path.join(root, 'password.txt')
 
 
 def set_password():
     """Called by `--set-password`, this sets a new password."""
-    digest = hashlib.sha512(getpass.getpass().encode("utf-8")).hexdigest()
-    with open(password_path, "w") as out_file:
+    digest = hashlib.sha512(getpass.getpass().encode('utf-8')).hexdigest()
+    with open(password_path, 'w') as out_file:
         out_file.write(digest)
     return digest
 
@@ -54,24 +54,24 @@ def run_server(bath, port=50000, require_login=False):
     class IndexHandler(tornado.web.RequestHandler):
 
         def get(self):
-            if require_login and not self.get_secure_cookie("vwr"):
-                self.redirect("/login")
+            if require_login and not self.get_secure_cookie('vwr'):
+                self.redirect('/login')
             else:
-                self.render("index.template", port=port)
+                self.render('index.template', port=port)
 
     class LoginHandler(tornado.web.RequestHandler):
 
         def get(self):
-            self.render("login.template")
+            self.render('login.template')
 
         def post(self):
-            submitted_pass = self.get_argument("password", "").encode("utf-8")
+            submitted_pass = self.get_argument('password', '').encode('utf-8')
             if hashlib.sha512(submitted_pass).hexdigest() == password:
-                self.set_secure_cookie("vwr", str(time.time()))
-                self.redirect("/")
+                self.set_secure_cookie('vwr', str(time.time()))
+                self.redirect('/')
             else:
                 time.sleep(1)
-                self.redirect(u"/login?error")
+                self.redirect(u'/login?error')
 
     class WebSocket(tornado.websocket.WebSocketHandler):
 
@@ -80,11 +80,11 @@ def run_server(bath, port=50000, require_login=False):
             self.p.start()
 
         def _loop(self):
-            state = {"setpoint": bath.get_setpoint(),
-                     "actual": bath.get_internal_temperature(),
-                     "units": bath.get_temperature_units()}
-            res = json.dumps({"result": state, "error": 0, "data": True},
-                             separators=(",", ":"))
+            state = {'setpoint': bath.get_setpoint(),
+                     'actual': bath.get_internal_temperature(),
+                     'units': bath.get_temperature_units()}
+            res = json.dumps({'result': state, 'error': 0, 'data': True},
+                             separators=(',', ':'))
             self.write_message(res)
 
         def on_message(self, message):
@@ -93,23 +93,23 @@ def run_server(bath, port=50000, require_login=False):
 
             try:
                 result = getattr(bath,
-                                 json_rpc["method"])(**json_rpc["params"])
+                                 json_rpc['method'])(**json_rpc['params'])
                 error = None
             except:
                 result = traceback.format_exc()
                 error = 1
 
-            self.write_message(json.dumps({"result": result,
-                                           "error": error,
-                                           "id": json_rpc["id"]},
-                                          separators=(",", ":")))
+            self.write_message(json.dumps({'result': result,
+                                           'error': error,
+                                           'id': json_rpc['id']},
+                                          separators=(',', ':')))
 
         def on_close(self):
             """Stops looping calls on close."""
             self.p.stop()
 
-    handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
-                (r"/websocket", WebSocket),
+    handlers = [(r'/', IndexHandler), (r'/login', LoginHandler),
+                (r'/websocket', WebSocket),
                 (r'/static/(.*)', tornado.web.StaticFileHandler,
                  {'path': root})]
     if require_login:

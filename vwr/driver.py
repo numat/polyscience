@@ -27,7 +27,7 @@ class CirculatingBath(object):
         self.password = password
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.listener.bind(("", 1026))
+        self.listener.bind(('', 1026))
         self.listener.settimeout(timeout)
 
     def turn_on(self):
@@ -36,8 +36,8 @@ class CirculatingBath(object):
         Returns:
             True if successful, else False.
         """
-        self._send("SO1P{}".format(self.password))
-        return (self._receive() == "!")
+        self._send('SO1P{}'.format(self.password))
+        return (self._receive() == '!')
 
     def turn_off(self):
         """Turns the circulating bath off.
@@ -45,27 +45,27 @@ class CirculatingBath(object):
         Returns:
             True if successful, else False.
         """
-        self._send("SO0P{}".format(self.password))
-        return (self._receive() == "!")
+        self._send('SO0P{}'.format(self.password))
+        return (self._receive() == '!')
 
     def get_setpoint(self):
         """Get the setpoint temperature."""
-        self._send("RS")
+        self._send('RS')
         return float(self._receive())
 
     def get_temperature_units(self):
         """Gets the temperature units, e.g. C or F."""
-        self._send("RU")
+        self._send('RU')
         return self._receive()
 
     def get_internal_temperature(self):
         """Get the temperature inside the bath."""
-        self._send("RT")
+        self._send('RT')
         return float(self._receive())
 
     def get_external_temperature(self):
         """If connected, get the temperature of the external thermocouple."""
-        self._send("RR")
+        self._send('RR')
         return self._receive()
 
     def set_setpoint(self, setpoint):
@@ -76,8 +76,8 @@ class CirculatingBath(object):
         Returns:
             True if successful, else False.
         """
-        self._send("SS{:.2f}P{:d}".format(setpoint, self.password))
-        return (self._receive() == "!")
+        self._send('SS{:.2f}P{:d}'.format(setpoint, self.password))
+        return (self._receive() == '!')
 
     def close(self):
         """Closes the listening port."""
@@ -85,10 +85,10 @@ class CirculatingBath(object):
 
     def _send(self, message):
         """Selds a message to the circulating bath."""
-        self.sender.sendto((message + "\r").encode("utf-8"),
+        self.sender.sendto((message + '\r').encode('utf-8'),
                            (self.address, 1024))
 
     def _receive(self):
         """Receives messages from the circulating bath."""
         message, _ = self.listener.recvfrom(512)
-        return message.decode("utf-8").strip()
+        return message.decode('utf-8').strip()
