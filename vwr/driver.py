@@ -14,22 +14,23 @@ class CirculatingBath(object):
 
     This class communicates with the circulating bath over UDP sockets.
     """
-    def __init__(self, address, password=100, timeout=2):
+    def __init__(self, address, password=100, timeout=None):
         """Opens ports to communicate with the circulating bath.
 
         Args:
             address: The IP address of the device
             password: The password next to "Unlock" in the user interface
                 settings. Default 100.
-            timeout: Max time to wait for response, in seconds. Default 2.
+            timeout: Max time to wait for response, in seconds. Default None
+                (blocking).
         """
         self.address = address
         self.password = password
-        self.timeout = timeout
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(('', 1026))
-        self.listener.settimeout(timeout)
+        if timeout:
+            self.listener.settimeout(timeout)
 
     def turn_on(self):
         """Turns the circulating bath on.
@@ -40,21 +41,17 @@ class CirculatingBath(object):
         self._send('SO1P{}'.format(self.password))
         return (self._receive() == '!')
 
-    def turn_off(self, timeout=5):
+    def turn_off(self):
         """Turns the circulating bath off.
 
         Note that turning the bath off takes multiple seconds before a response
-        is sent. For this reason, this function has an independent `timeout`
-        parameter.
+        is sent. Be careful when using this method with a set timeout.
 
         Returns:
             True if successful, else False.
         """
         self._send('SO0P{}'.format(self.password))
-        self.listener.setttimeout(timeout)
-        response = self._receive()
-        self.listener.setttimeout(self.timeout)
-        return (response == '!')
+        return (self._receive() == '!')
 
     def get(self):
         """Gets the setpoint and internal temperature."""
