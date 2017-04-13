@@ -25,6 +25,7 @@ class CirculatingBath(object):
         """
         self.address = address
         self.password = password
+        self.timeout = timeout
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(('', 1026))
@@ -39,14 +40,21 @@ class CirculatingBath(object):
         self._send('SO1P{}'.format(self.password))
         return (self._receive() == '!')
 
-    def turn_off(self):
+    def turn_off(self, timeout=5):
         """Turns the circulating bath off.
+
+        Note that turning the bath off takes multiple seconds before a response
+        is sent. For this reason, this function has an independent `timeout`
+        parameter.
 
         Returns:
             True if successful, else False.
         """
         self._send('SO0P{}'.format(self.password))
-        return (self._receive() == '!')
+        self.listener.setttimeout(timeout)
+        response = self._receive()
+        self.listener.setttimeout(self.timeout)
+        return (response == '!')
 
     def get(self):
         """Gets the setpoint and internal temperature."""

@@ -30,7 +30,7 @@ python setup.py install
 Usage
 =====
 
-###Web Server
+### Web Server
 
 <p align="center">
   <img src="screenshot.png" height="400" />
@@ -49,7 +49,7 @@ by clicking on and overwriting the displayed setpoint.
 You can set a password with `vwr [ip] --set-password`, and serve a login page
 with `vwr [ip] --require-login`. For more, check out the help with `vwr --help`.
 
-###Python
+### Python
 
 For complex interaction, use this as part of a Python script.
 
