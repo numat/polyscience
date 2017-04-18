@@ -29,6 +29,7 @@ class CirculatingBath(object):
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(('', 1026))
+        self.waiting = False
         if timeout:
             self.listener.settimeout(timeout)
 
@@ -63,7 +64,8 @@ class CirculatingBath(object):
     def get_setpoint(self):
         """Gets the setpoint temperature."""
         self._send('RS')
-        return float(self._receive())
+        response = self._receive()
+        return float(response) if response else None
 
     def get_temperature_units(self):
         """Gets the temperature units, e.g. C or F."""
@@ -73,7 +75,8 @@ class CirculatingBath(object):
     def get_internal_temperature(self):
         """Gets the temperature inside the bath."""
         self._send('RT')
-        return float(self._receive())
+        response = self._receive()
+        return float(response) if response else None
 
     def get_external_temperature(self):
         """If connected, get the temperature of the external thermocouple."""
@@ -83,12 +86,14 @@ class CirculatingBath(object):
     def get_operating_status(self):
         """Returns a boolean indicating if bath is operating."""
         self._send('RO')
-        return bool(int(self._receive()))
+        response = self._receive()
+        return bool(int(response)) if response else None
 
     def get_pump_speed(self):
         """Returns pump speed as an integer indicating percent, 5-100."""
         self._send('RM')
-        return int(self._receive())
+        response = self._receive()
+        return int(response) if response else None
 
     def set_setpoint(self, setpoint):
         """Sets setpoint temperature.
@@ -120,10 +125,18 @@ class CirculatingBath(object):
 
     def _send(self, message):
         """Selds a message to the circulating bath."""
+        if self.waiting:
+            raise IOError("Waiting for another bath request to be processed.")
         self.sender.sendto((message + '\r').encode('utf-8'),
                            (self.address, 1024))
+        self.waiting = True
 
     def _receive(self):
         """Receives messages from the circulating bath."""
-        message, _ = self.listener.recvfrom(512)
-        return message.decode('utf-8').strip()
+        try:
+            message, _ = self.listener.recvfrom(512)
+            response = message.decode('utf-8').strip()
+        except socket.timeout:
+            response = None
+        self.waiting = False
+        return response
