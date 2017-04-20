@@ -26,12 +26,22 @@ class CirculatingBath(object):
         """
         self.address = address
         self.password = password
+        self.timeout = timeout
+        self._connect()
+
+    def _connect(self):
+        """Connects to the device using two UDP raw sockets.
+
+        The interface is bizarre in that the device expects requests on
+        port 1024, but replies on port 1026. To get around, we use two
+        separate sockets and handle blocking with the `self.waiting` boolean.
+        """
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.listener.bind(('', 1026))
         self.waiting = False
-        if timeout:
-            self.listener.settimeout(timeout)
+        if self.timeout:
+            self.listener.settimeout(self.timeout)
 
     def turn_on(self):
         """Turns the circulating bath on.
@@ -138,5 +148,6 @@ class CirculatingBath(object):
             response = message.decode('utf-8').strip()
         except socket.timeout:
             response = None
+            self._connect()
         self.waiting = False
         return response
