@@ -9,7 +9,6 @@ import argparse
 import socket
 import sys
 import webbrowser
-from blessings import Terminal
 from vwr import server
 from vwr.driver import CirculatingBath
 
@@ -34,7 +33,6 @@ def command_line():
     args = parser.parse_args()
 
     bath = CirculatingBath(args.address, password=args.unlock_code)
-    t = Terminal()
 
     if args.set_password:
         server.set_password()
@@ -43,25 +41,24 @@ def command_line():
         setpoint = bath.get_setpoint()
         actual = bath.get_internal_temperature()
         units = bath.get_temperature_units()
-        print(t.bold_white("Current state:") + " {setpoint:.2f} {units} "
-              "setpoint, {actual:.2f} {units} actual".format(**locals()))
+        print(("Current state: {setpoint:.2f} {units} "
+              "setpoint, {actual:.2f} {units} actual").format(**locals()))
     except socket.timeout:
-        sys.stderr.write(t.bold_red("Could not connect to VWR circulating bath"
-                         ". Is it running at {}?\r\n".format(args.address)))
+        sys.stderr.write("Could not connect to VWR circulating bath"
+                         ". Is it running at {}?\n".format(args.address))
         bath.close()
         sys.exit(0)
 
     if args.set_temperature:
         success = bath.set_setpoint(args.set_temperature)
         if success:
-            print(t.bold_green("Successfully set temperature to {setpoint:.2f}"
-                  " {units}.".format(setpoint=args.set_temperature,
-                                     units=units)))
+            print(("Successfully set temperature to {setpoint:.2f}"
+                  " {units}.").format(setpoint=args.set_temperature,
+                                      units=units))
         else:
-            sys.stderr.write(t.bold_red("Failed to set temperature."))
+            sys.stderr.write("Failed to set temperature.")
 
-    print(t.bold_white("Running server at http://localhost:{}/"
-          .format(args.port)))
+    print("Running server at http://localhost:{}/".format(args.port))
     webbrowser.open("http://localhost:{}/".format(args.port), new=2)
     try:
         server.run_server(bath, port=args.port,

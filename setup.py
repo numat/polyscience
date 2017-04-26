@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='vwr',
-    version='0.1.12',
+    version='0.1.13',
     description='Python driver for VWR circulating baths.',
     url='http://github.com/numat/vwr/',
     author='Patrick Fuller',
@@ -11,7 +11,7 @@ setup(
     package_data={'vwr': ['vwr/client.js', 'vwr/main.css',
                           'vwr/*.template']},
     include_package_data=True,
-    install_requires=['tornado', 'blessings'],
+    install_requires=['tornado'],
     entry_points={
         'console_scripts': [('vwr = vwr:command_line')]
     },
