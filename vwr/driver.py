@@ -6,6 +6,7 @@ Distributed under the GNU General Public License v2
 Copyright (C) 2015 NuMat Technologies
 """
 import socket
+from threading import Timer
 
 
 class CirculatingBath(object):
@@ -14,6 +15,10 @@ class CirculatingBath(object):
 
     This class communicates with the circulating bath over UDP sockets.
     """
+    max_delay = 60
+    initial_delay = 1
+    factor = 2
+
     def __init__(self, address, password=100, timeout=None):
         """Opens ports to communicate with the circulating bath.
 
@@ -27,7 +32,9 @@ class CirculatingBath(object):
         self.address = address
         self.password = password
         self.timeout = timeout
-        self._connect()
+        self.connected = False
+        self.delay = self.initial_delay
+        self._reconnect()
 
     def _connect(self):
         """Connects to the device using two UDP raw sockets.
@@ -42,6 +49,17 @@ class CirculatingBath(object):
         self.waiting = False
         if self.timeout:
             self.listener.settimeout(self.timeout)
+        self.get_setpoint()  # dummy request to check if bath is connected
+        self.connected = True
+        self.delay = self.initial_delay
+
+    def _reconnect(self):
+        """Reconnects on decay to the bath"""
+        try:
+            self._connect()
+        except socket.timeout:
+            self.delay = min(self.delay * self.factor, self.max_delay)
+            Timer(self.delay, self._reconnect).start()
 
     def turn_on(self):
         """Turns the circulating bath on.
@@ -49,8 +67,11 @@ class CirculatingBath(object):
         Returns:
             True if successful, else False.
         """
+        self.listener.settimeout(5)
         self._send('SO1P{}'.format(self.password))
-        return (self._receive() == '!')
+        response = self._receive()
+        self.listener.settimeout(self.timeout)
+        return (response == '!')
 
     def turn_off(self):
         """Turns the circulating bath off.
@@ -61,15 +82,34 @@ class CirculatingBath(object):
         Returns:
             True if successful, else False.
         """
+        self.listener.settimeout(5)
         self._send('SO0P{}'.format(self.password))
-        return (self._receive() == '!')
+        response = self._receive()
+        self.listener.settimeout(self.timeout)
+        return (response == '!')
+
+    def check_fault(self):
+        """Checks for faults with the bath
+
+        Returns:
+            True if faulty, else False
+        """
+        self._send('RF')
+        response = self._receive()
+        return (response == '1')
 
     def get(self):
         """Gets the setpoint and internal temperature."""
-        return {'setpoint': self.get_setpoint(),
-                'actual': self.get_internal_temperature(),
-                'pump': self.get_pump_speed(),
-                'on': self.get_operating_status()}
+        response = {'setpoint': self.get_setpoint(),
+                    'actual': self.get_internal_temperature(),
+                    'pump': self.get_pump_speed(),
+                    'on': self.get_operating_status(),
+                    'fault': self.check_fault(),
+                    'connected': True}
+        if self.connected and all(v is not None for v in response.values()):
+            return response
+        else:
+            return {'connected': False}
 
     def get_setpoint(self):
         """Gets the setpoint temperature."""
@@ -135,11 +175,18 @@ class CirculatingBath(object):
 
     def _send(self, message):
         """Selds a message to the circulating bath."""
-        if self.waiting:
-            raise IOError("Waiting for another bath request to be processed.")
-        self.sender.sendto((message + '\r').encode('utf-8'),
-                           (self.address, 1024))
-        self.waiting = True
+        if self.waiting or not self.connected:
+            Timer(1, self._send, [message]).start()
+        else:
+            self.waiting = True
+            try:
+                self.sender.sendto((message + '\r').encode('utf-8'),
+                                   (self.address, 1024))
+            except socket.timeout:
+                if self.connected:
+                    self.connected = False
+                    self._reconnect()
+                self.waiting = False
 
     def _receive(self):
         """Receives messages from the circulating bath."""
@@ -148,6 +195,9 @@ class CirculatingBath(object):
             response = message.decode('utf-8').strip()
         except socket.timeout:
             response = None
-            self._connect()
+            if self.connected:
+                self.connected = False
+                self._reconnect()
+                return None
         self.waiting = False
         return response
