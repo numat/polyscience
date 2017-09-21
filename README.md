@@ -1,62 +1,51 @@
-vwr
-===
+polyscience
+===========
 
-Web interface and Python bindings for [VWR circulating baths](https://us.vwr.com/store/catalog/product.jsp?catalog_number=89203-002).
+Python driver for [Polyscience Advanced Digital Controller Circulating Baths](https://polyscience.com/products/circulating-baths/heated-circulators/integrated-heated-baths/advanced-digital-controller).
 
 <p align="center">
-  <img src="https://us.vwr.com/stibo/low_res/std.lang.all/53/83/7545383.jpg" height="400" />
+  <img src="https://polyscience.com/sites/default/files/public/product-image/AD15H200.jpg" height="400" />
 </p>
 
-This was created to support older circulating baths (before touch screen models).
-These older devices have ethernet ports, but only support serial communication
-over UDP. This code provides the missing web interface by translating browser
-interaction into serial commands.
+This was created to support older circulating baths (before touch screen models). These older devices have ethernet ports, but only support serial communication
+over UDP. This code attempts to handle the awkwardness of serial-over-UDP communication, providing a simple API to read and control the unit.
 
 Installation
 ============
 
 ```
-pip install vwr
+pip install polyscience
 ```
 
 If you don't like pip, you can also install from source:
 
 ```
-git clone https://github.com/numat/vwr
-cd vwr
+git clone https://github.com/numat/polyscience
+cd polyscience
 python setup.py install
 ```
 
 Usage
 =====
 
-### Web Server
+### Command Line
 
-<p align="center">
-  <img src="screenshot.png" height="400" />
-</p>
-
-For temperature control models without a built-in web interface, this provides
-the same functionality. Run the server with:
+Read the bath from any networked computer with:
 
 ```
-vwr [ip-address]
+polyscience [ip-address]
 ```
 
-This should open a browser to http://localhost:50000/. Temperatures can be set
-by clicking on and overwriting the displayed setpoint.
-
-You can set a password with `vwr [ip] --set-password`, and serve a login page
-with `vwr [ip] --require-login`. For more, check out the help with `vwr --help`.
+This provides methods to set temperature, pump speed, control, and others. See `polyscience --help` for more.
 
 ### Python
 
 For complex interaction, use this as part of a Python script.
 
 ```python
-from vwr import CirculatingBath
-bath = CirculatingBath("192.168.1.100")
+from polyscience import CirculatingBath
+bath = CirculatingBath('192.168.1.100')
 print(bath.get_setpoint())
 ```
 
-Only some functionality is currently implemented. We will expand this as needed.
+A common usage is to compbine with asyncio/aiohttp to create an interactive web site.

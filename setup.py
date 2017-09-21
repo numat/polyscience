@@ -1,19 +1,16 @@
 from setuptools import setup
 
 setup(
-    name='vwr',
-    version='0.1.14',
-    description='Python driver for VWR circulating baths.',
-    url='http://github.com/numat/vwr/',
+    name='polyscience',
+    version='0.1.15',
+    description='Python driver for Polyscience circulating baths.',
+    url='http://github.com/numat/polyscience/',
     author='Patrick Fuller',
     author_email='pat@numat-tech.com',
-    packages=['vwr'],
-    package_data={'vwr': ['vwr/client.js', 'vwr/main.css',
-                          'vwr/*.template']},
+    packages=['polyscience'],
     include_package_data=True,
-    install_requires=['tornado'],
     entry_points={
-        'console_scripts': [('vwr = vwr:command_line')]
+        'console_scripts': [('polyscience = polyscience:command_line')]
     },
     license='GPLv2',
     classifiers=[

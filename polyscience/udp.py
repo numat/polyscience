@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""Python driver for [VWR circulating baths]
-(https://us.vwr.com/store/catalog/product.jsp?catalog_number=89203-002).
+"""Python driver for [Polyscience circulating baths]
+(https://polyscience.com/sites/default/files/public/product-image/AD15H200.jpg).
 
 Distributed under the GNU General Public License v2
 Copyright (C) 2015 NuMat Technologies
@@ -10,8 +10,8 @@ from threading import Timer
 
 
 class CirculatingBath(object):
-    """Python driver for [VWR circulating baths](https://us.vwr.com/store/
-    catalog/product.jsp?catalog_number=89203-002).
+    """Python driver for [Polyscience circulating baths](https://polyscience.
+    com/sites/default/files/public/product-image/AD15H200.jpg).
 
     This class communicates with the circulating bath over UDP sockets.
     """
@@ -49,8 +49,8 @@ class CirculatingBath(object):
         self.waiting = False
         if self.timeout:
             self.listener.settimeout(self.timeout)
-        self.get_setpoint()  # dummy request to check if bath is connected
         self.connected = True
+        self.get_setpoint()  # dummy request to check if bath is connected
         self.delay = self.initial_delay
 
     def _reconnect(self):
@@ -175,29 +175,20 @@ class CirculatingBath(object):
 
     def _send(self, message):
         """Selds a message to the circulating bath."""
-        if self.waiting or not self.connected:
+        if self.waiting:
             Timer(1, self._send, [message]).start()
-        else:
+        elif self.connected:
             self.waiting = True
-            try:
-                self.sender.sendto((message + '\r').encode('utf-8'),
-                                   (self.address, 1024))
-            except socket.timeout:
-                if self.connected:
-                    self.connected = False
-                    self._reconnect()
-                self.waiting = False
+            self.sender.sendto((message + '\r').encode('utf-8'),
+                               (self.address, 1024))
 
     def _receive(self):
         """Receives messages from the circulating bath."""
         try:
             message, _ = self.listener.recvfrom(512)
             response = message.decode('utf-8').strip()
-        except socket.timeout:
-            response = None
-            if self.connected:
-                self.connected = False
-                self._reconnect()
-                return None
+        except socket.timeout as e:
+            self.waiting = False
+            raise TimeoutError("Socket timed out.") from e
         self.waiting = False
         return response
