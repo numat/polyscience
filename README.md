@@ -48,4 +48,4 @@ bath = CirculatingBath('192.168.1.100')
 print(bath.get_setpoint())
 ```
 
-A common usage is to compbine with asyncio/aiohttp to create an interactive web site.
+A common usage is to create an interactive web site. This driver blocks (my earlier async implementations were prone to overwhelming the bath), so put the bath i/o in its own thread.
