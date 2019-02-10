@@ -1,26 +1,24 @@
-#!/usr/bin/env python
-"""Python driver for [Polyscience circulating baths]
-(https://polyscience.com/sites/default/files/public/product-image/AD15H200.jpg).
+"""Python driver and command-line tool for Polyscience baths.
 
 Distributed under the GNU General Public License v2
-Copyright (C) 2015 NuMat Technologies
+Copyright (C) 2019 NuMat Technologies
 """
 import socket
 from threading import Timer
 
 
 class CirculatingBath(object):
-    """Python driver for [Polyscience circulating baths](https://polyscience.
-    com/sites/default/files/public/product-image/AD15H200.jpg).
+    """Python driver for Polyscience baths.
 
     This class communicates with the circulating bath over UDP sockets.
     """
+
     max_delay = 60
     initial_delay = 1
     factor = 2
 
     def __init__(self, address, password=100, timeout=None):
-        """Opens ports to communicate with the circulating bath.
+        """Open ports to communicate with the circulating bath.
 
         Args:
             address: The IP address of the device
@@ -37,7 +35,7 @@ class CirculatingBath(object):
         self._reconnect()
 
     def _connect(self):
-        """Connects to the device using two UDP raw sockets.
+        """Connect to the device using two UDP raw sockets.
 
         The interface is bizarre in that the device expects requests on
         port 1024, but replies on port 1026. To get around, we use two
@@ -54,7 +52,7 @@ class CirculatingBath(object):
         self.delay = self.initial_delay
 
     def _reconnect(self):
-        """Reconnects on decay to the bath"""
+        """Reconnect on decay to the bath."""
         try:
             self._connect()
         except socket.timeout:
@@ -62,10 +60,11 @@ class CirculatingBath(object):
             Timer(self.delay, self._reconnect).start()
 
     def turn_on(self):
-        """Turns the circulating bath on.
+        """Turn the circulating bath on.
 
         Returns:
             True if successful, else False.
+
         """
         self.listener.settimeout(5)
         self._send('SO1P{}'.format(self.password))
@@ -74,13 +73,14 @@ class CirculatingBath(object):
         return (response == '!')
 
     def turn_off(self):
-        """Turns the circulating bath off.
+        """Turn the circulating bath off.
 
         Note that turning the bath off takes multiple seconds before a response
         is sent. Be careful when using this method with a set timeout.
 
         Returns:
             True if successful, else False.
+
         """
         self.listener.settimeout(5)
         self._send('SO0P{}'.format(self.password))
@@ -89,17 +89,18 @@ class CirculatingBath(object):
         return (response == '!')
 
     def check_fault(self):
-        """Checks for faults with the bath
+        """Check for faults with the bath.
 
         Returns:
             True if faulty, else False
+
         """
         self._send('RF')
         response = self._receive()
         return (response == '1')
 
     def get(self):
-        """Gets the setpoint and internal temperature."""
+        """Get the setpoint and internal temperature."""
         response = {'setpoint': self.get_setpoint(),
                     'actual': self.get_internal_temperature(),
                     'pump': self.get_pump_speed(),
@@ -112,18 +113,18 @@ class CirculatingBath(object):
             return {'connected': False}
 
     def get_setpoint(self):
-        """Gets the setpoint temperature."""
+        """Get the setpoint temperature."""
         self._send('RS')
         response = self._receive()
         return float(response) if response else None
 
     def get_temperature_units(self):
-        """Gets the temperature units, e.g. C or F."""
+        """Get the temperature units, e.g. C or F."""
         self._send('RU')
         return self._receive()
 
     def get_internal_temperature(self):
-        """Gets the temperature inside the bath."""
+        """Get the temperature inside the bath."""
         self._send('RT')
         response = self._receive()
         return float(response) if response else None
@@ -134,47 +135,49 @@ class CirculatingBath(object):
         return self._receive()
 
     def get_operating_status(self):
-        """Returns a boolean indicating if bath is operating."""
+        """Return a boolean indicating if bath is operating."""
         self._send('RO')
         response = self._receive()
         return bool(int(response)) if response else None
 
     def get_pump_speed(self):
-        """Returns pump speed as an integer indicating percent, 5-100."""
+        """Return pump speed as an integer indicating percent, 5-100."""
         self._send('RM')
         response = self._receive()
         return int(response) if response else None
 
     def set_setpoint(self, setpoint):
-        """Sets setpoint temperature.
+        """Set setpoint temperature.
 
         Args:
             setpoint: Setpoint temperature, in machine units, as a float.
         Returns:
             True if successful, else False.
+
         """
         self._send('SS{:.2f}P{:d}'.format(setpoint, self.password))
         return (self._receive() == '!')
 
     def set_pump_speed(self, speed):
-        """Sets pump speed.
+        """Set pump speed.
 
         Args:
             setpoint: Pump speed as an integer, 5-100. Will be rounded to
                 nearest 5.
         Returns:
             True if successful, else False.
+
         """
         rounded_speed = int(5 * round(speed / 5))
         self._send('SM{:d}P{:d}'.format(rounded_speed, self.password))
         return (self._receive() == '!')
 
     def close(self):
-        """Closes the listening port."""
+        """Close the listening port."""
         self.listener.close()
 
     def _send(self, message):
-        """Selds a message to the circulating bath."""
+        """Seld a message to the circulating bath."""
         if self.waiting:
             Timer(1, self._send, [message]).start()
         elif self.connected:
@@ -183,7 +186,7 @@ class CirculatingBath(object):
                                (self.address, 1024))
 
     def _receive(self):
-        """Receives messages from the circulating bath."""
+        """Receive messages from the circulating bath."""
         try:
             message, _ = self.listener.recvfrom(512)
             response = message.decode('utf-8').strip()

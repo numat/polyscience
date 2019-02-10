@@ -1,11 +1,7 @@
-#!/usr/bin/env python
-"""
-Python driver and command-line tool for [Polyscience circulating
-baths](https://polyscience.com/sites/default/files/public/product-image/
-AD15H200.jpg).
+"""Python driver and command-line tool for Polyscience baths.
 
 Distributed under the GNU General Public License v2
-Copyright (C) 2015 NuMat Technologies
+Copyright (C) 2019 NuMat Technologies
 """
 from polyscience.udp import CirculatingBath
 
